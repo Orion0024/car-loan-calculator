@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Car Loan Calculator &amp; Quotation Generator</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Fonts (Inter typography) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet" />
+    
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Tailwind CSS Config -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            200: '#bfdbfe',
+                            500: '#2563eb',
+                            600: '#1d4ed8',
+                            700: '#1e40af',
+                            800: '#1e3a8a',
+                            900: '#172554',
+                        }
+                    }
+                }
+            }
+        };
+    </script>
+
+    <style>
+        html { -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Inter', sans-serif; }
+
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }
+        .dark .custom-scrollbar::-webkit-scrollbar-track { background: #0f172a; }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; }
+
+        .tab-panel { display: none; opacity: 0; transition: opacity 0.2s ease-in-out; }
+        .tab-panel.active { display: block; opacity: 1; }
+
+        /* Custom Range Slider Styling without border */
+        input[type=range] {
+            -webkit-appearance: none;
+            appearance: none;
+            height: 8px;
+            border-radius: 9999px;
+            outline: none;
+            background: #e2e8f0;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            height: 22px;
+            width: 22px;
+            border-radius: 50%;
+            background: #2563eb;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(37, 99, 235, 0.4);
+            border: none;
+            transition: transform 0.15s ease, background-color 0.15s ease;
+        }
+        input[type=range]::-webkit-slider-thumb:hover {
+            transform: scale(1.15);
+        }
+        input[type=range]::-moz-range-thumb {
+            height: 22px;
+            width: 22px;
+            border-radius: 50%;
+            background: #2563eb;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(37, 99, 235, 0.4);
+            border: none;
+            transition: transform 0.15s ease;
+        }
+
+        /* Dedicated Print formatting without borders */
+        @media print {
+            header, #inputPanel, #heroCards, #tabHeader, .no-print, #toastContainer, .print-hide { display: none !important; }
+            body { background: #fff !important; color: #000 !important; padding: 0 !important; margin: 0 !important; }
+            main { max-width: none !important; padding: 0 !important; margin: 0 !important; width: 100% !important; }
+            
+            .lg\:col-span-7, .grid, main > div, #panel-quotation { 
+                display: block !important; 
+                opacity: 1 !important; 
+                border: none !important; 
+                box-shadow: none !important; 
+                background: transparent !important; 
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            
+            #panel-overview, #panel-analytics { display: none !important; }
+            
+            .print-card { 
+                border: none !important; 
+                border-radius: 12px !important;
+                padding: 16px !important;
+                background: #fff !important;
+            }
+            
+            .print-input-clean { 
+                border: none !important; 
+                background: transparent !important; 
+                padding: 0 !important; 
+                font-weight: bold !important; 
+            }
+
+            .print-cust-row {
+                display: flex !important;
+                flex-direction: row !important;
+                align-items: center !important;
+                justify-content: space-between !important;
+                gap: 8px !important;
+                padding-bottom: 6px !important;
+            }
+            .print-cust-row label {
+                white-space: nowrap !important;
+            }
+            .print-cust-row input {
+                text-align: right !important;
+                width: auto !important;
+                flex-grow: 1 !important;
+            }
+
+            * { box-shadow: none !important; border: none !important; }
+        }
+    </style>
+</head>
+
+<body class="bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-screen antialiased selection:bg-brand-500 selection:text-white transition-colors duration-200 pb-10">
+
+    <!-- Header Navbar -->
+    <header class="bg-white/95 dark:bg-slate-900/95 backdrop-blur-md sticky top-0 z-30 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-brand-600 text-white rounded-2xl shadow-sm flex items-center justify-center">
+                    <span class="material-icons-outlined text-2xl" aria-hidden="true">directions_car</span>
+                </div>
+                <div>
+                    <h1 class="text-base sm:text-lg font-bold text-slate-900 dark:text-white leading-tight">
+                        Car Loan Calculator
+                    </h1>
+                    <p class="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+                        Smart Payment &amp; Interest Analyzer
+                    </p>
+                </div>
+            </div>
+
+            <!-- Header Quick Actions -->
+            <div class="flex items-center gap-2">
+                <!-- Reset Button -->
+                <button type="button" onclick="resetDefaults()" 
+                    class="p-2 text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all flex items-center gap-1 text-xs font-semibold"
+                    title="Reset Inputs">
+                    <span class="material-icons-outlined text-base" aria-hidden="true">restart_alt</span>
+                    <span class="hidden md:inline">Reset</span>
+                </button>
+
+                <!-- Dark Mode Toggle -->
+                <button type="button" id="themeToggleBtn" onclick="toggleDarkMode()" 
+                    class="p-2 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
+                    title="Toggle Dark Mode">
+                    <span class="material-icons-outlined text-xl" id="themeIcon" aria-hidden="true">dark_mode</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 space-y-6">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+            <!-- LEFT COLUMN: INPUT CONTROLS -->
+            <section id="inputPanel" class="lg:col-span-5 bg-white dark:bg-slate-900 rounded-3xl p-4 sm:p-6 shadow-sm space-y-5">
+                <div class="flex items-center justify-between pb-1">
+                    <div class="flex items-center gap-2">
+                        <span class="material-icons-outlined text-brand-600 dark:text-brand-500" aria-hidden="true">tune</span>
+                        <h2 class="text-sm sm:text-base font-bold">Loan Input Details</h2>
+                    </div>
+                    <span class="text-[11px] font-semibold text-brand-600 dark:text-brand-400 bg-brand-50 dark:bg-brand-950 px-2 py-0.5 rounded-lg">
+                        Interactive
+                    </span>
+                </div>
+
+                <form id="loanForm" onsubmit="event.preventDefault();" class="space-y-4">
+
+                    <!-- Car Price / Value -->
+                    <div class="space-y-1.5">
+                        <div class="flex justify-between items-center">
+                            <label for="carValue" class="block text-xs sm:text-sm font-bold">
+                                Car Value
+                            </label>
+                            <span id="carValueLakh" class="text-xs font-bold text-brand-700 dark:text-brand-300 bg-brand-50 dark:bg-brand-950/80 px-2 py-0.5 rounded-lg">
+                                (0 Lakhs)
+                            </span>
+                        </div>
+                        <div class="relative rounded-2xl shadow-sm">
+                            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400" aria-hidden="true">
+                                <span class="material-icons-outlined text-lg">directions_car</span>
+                            </div>
+                            <input id="carValue" type="text" inputmode="numeric" value="" placeholder="Amount"
+                                oninput="formatAndCalculate(this)" 
+                                class="block w-full pl-10 pr-14 py-3 text-sm sm:text-base bg-slate-50 dark:bg-slate-950 rounded-2xl focus:ring-2 focus:ring-brand-500 transition-all font-bold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none" />
+                            <div class="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-slate-500 dark:text-slate-400 text-xs font-bold">
+                                MMK
+                            </div>
+                        </div>
+                        <!-- Car Value Presets -->
+                        <div class="flex items-center gap-1.5 pt-1 overflow-x-auto custom-scrollbar pb-1">
+                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex-shrink-0">Presets:</span>
+                            <button type="button" onclick="setCarValuePreset(250000000)" class="text-[11px] px-2 py-1 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-lg font-bold text-slate-700 dark:text-slate-300 flex-shrink-0 transition-all">2,500 Lakhs</button>
+                            <button type="button" onclick="setCarValuePreset(350000000)" class="text-[11px] px-2 py-1 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-lg font-bold text-slate-700 dark:text-slate-300 flex-shrink-0 transition-all">3,500 Lakhs</button>
+                            <button type="button" onclick="setCarValuePreset(450000000)" class="text-[11px] px-2 py-1 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-lg font-bold text-slate-700 dark:text-slate-300 flex-shrink-0 transition-all">4,500 Lakhs</button>
+                            <button type="button" onclick="setCarValuePreset(500000000)" class="text-[11px] px-2 py-1 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-lg font-bold text-slate-700 dark:text-slate-300 flex-shrink-0 transition-all">5,000 Lakhs</button>
+                        </div>
+                    </div>
+
+                    <!-- Down Payment -->
+                    <div class="p-3.5 sm:p-4 bg-slate-50 dark:bg-slate-950 rounded-2xl space-y-3">
+                        <div class="flex justify-between items-center">
+                            <label class="text-xs sm:text-sm font-bold flex items-center gap-1.5">
+                                <span class="material-icons-outlined text-base text-slate-500" aria-hidden="true">pie_chart</span>
+                                Down Payment (%)
+                            </label>
+                            <span id="downPaymentAmountDisplay" class="text-xs sm:text-sm font-bold text-brand-700 dark:text-brand-400">
+                                0 MMK
+                            </span>
+                        </div>
+
+                        <!-- Quick Down Payment Presets -->
+                        <div class="grid grid-cols-4 gap-1.5">
+                            <button type="button" onclick="selectDpPreset(20)" class="dp-preset-btn text-xs py-2 rounded-xl font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all active:scale-95" data-value="20">20%</button>
+                            <button type="button" onclick="selectDpPreset(30)" class="dp-preset-btn text-xs py-2 rounded-xl font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all active:scale-95" data-value="30">30%</button>
+                            <button type="button" onclick="selectDpPreset(50)" class="dp-preset-btn text-xs py-2 rounded-xl bg-brand-50 dark:bg-brand-950/80 text-brand-700 dark:text-brand-300 font-extrabold active:scale-95 transition-all" data-value="50">50%</button>
+                            <button type="button" onclick="selectDpPreset(70)" class="dp-preset-btn text-xs py-2 rounded-xl font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all active:scale-95" data-value="70">70%</button>
+                        </div>
+
+                        <!-- Range Slider with Dynamic Track Color -->
+                        <div class="flex items-center gap-3 pt-1">
+                            <input type="range" id="downPaymentRange" min="0" max="90" step="5" value="50" oninput="syncDownPaymentFromRange(this.value)" class="w-full h-2 rounded-lg appearance-none cursor-pointer">
+                            <div class="relative w-20 flex-shrink-0">
+                                <input type="number" id="downPaymentPercent" min="0" max="100" step="0.5" value="50" placeholder="50" oninput="syncDownPaymentFromInput(this.value)" class="w-full pl-2 pr-6 py-1.5 text-right text-xs sm:text-sm bg-white dark:bg-slate-900 rounded-xl font-bold text-slate-900 dark:text-white placeholder-slate-400 outline-none">
+                                <span class="absolute right-2 top-2 text-xs font-bold text-slate-400 pointer-events-none">%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Loan Term & Interest Rate -->
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="space-y-1.5">
+                            <label for="loanYears" class="block text-xs sm:text-sm font-bold">Loan Term</label>
+                            <div class="relative">
+                                <input type="number" id="loanYears" min="1" max="10" step="1" value="" placeholder="Years" oninput="calculateAll()" class="w-full pl-3 pr-12 py-3 text-xs sm:text-sm bg-slate-50 dark:bg-slate-950 rounded-xl font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-500 placeholder-slate-400 outline-none">
+                                <span class="absolute right-3 top-3 text-xs font-bold text-slate-500 dark:text-slate-400">Years</span>
+                            </div>
+                        </div>
+
+                        <div class="space-y-1.5">
+                            <label for="interestRate" class="block text-xs sm:text-sm font-bold">Annual Interest Rate</label>
+                            <div class="relative">
+                                <input type="number" id="interestRate" min="0" max="100" step="0.1" value="13" placeholder="e.g. 13" oninput="calculateAll()" class="w-full pl-3 pr-8 py-3 text-xs sm:text-sm bg-slate-50 dark:bg-slate-950 rounded-xl font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-500 placeholder-slate-400 outline-none">
+                                <span class="absolute right-3 top-3 text-xs font-bold text-slate-500 dark:text-slate-400">%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Fees & Insurance Group -->
+                    <div class="rounded-2xl p-3.5 sm:p-4 space-y-3 bg-slate-50/70 dark:bg-slate-950/50">
+                        <div class="flex items-center justify-between text-xs sm:text-sm font-bold">
+                            <span class="flex items-center gap-1.5">
+                                <span class="material-icons-outlined text-base text-slate-500" aria-hidden="true">receipt</span>
+                                <span>Fees &amp; Insurance %</span>
+                            </span>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3 pt-1">
+                            <div>
+                                <label for="bankServicePercent" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                                    Bank Service Fees
+                                </label>
+                                <div class="relative">
+                                    <input type="number" id="bankServicePercent" min="0" max="100" step="0.1" value="2" placeholder="e.g. 2" oninput="calculateAll()" class="w-full pl-2.5 pr-6 py-2 text-xs sm:text-sm bg-white dark:bg-slate-900 rounded-xl font-bold text-slate-900 dark:text-white placeholder-slate-400 outline-none">
+                                    <span class="absolute right-2 top-2 text-xs font-bold text-slate-400">%</span>
+                                </div>
+                                <span id="bankFeeCalc" class="text-[11px] font-bold text-slate-500 dark:text-slate-400 mt-1 block">0 MMK</span>
+                            </div>
+
+                            <div>
+                                <label for="carServicePercent" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                                    Company Service Fees
+                                </label>
+                                <div class="relative">
+                                    <input type="number" id="carServicePercent" min="0" max="100" step="0.1" value="2" placeholder="e.g. 2" oninput="calculateAll()" class="w-full pl-2.5 pr-6 py-2 text-xs sm:text-sm bg-white dark:bg-slate-900 rounded-xl font-bold text-slate-900 dark:text-white placeholder-slate-400 outline-none">
+                                    <span class="absolute right-2 top-2 text-xs font-bold text-slate-400">%</span>
+                                </div>
+                                <span id="carFeeCalc" class="text-[11px] font-bold text-slate-500 dark:text-slate-400 mt-1 block">0 MMK</span>
+                            </div>
+                        </div>
+
+                        <div class="pt-2">
+                            <div class="flex justify-between items-center mb-1 gap-2">
+                                <label for="insurancePercent" class="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                                    Car Insurance
+                                </label>
+                                <select id="insuranceBase" onchange="calculateAll()" class="text-[11px] bg-white dark:bg-slate-900 rounded-lg px-2 py-1 font-bold text-slate-800 dark:text-slate-200 outline-none">
+                                    <option value="carValue" selected>On Car Value</option>
+                                    <option value="loanAmount">On Loan Amount</option>
+                                </select>
+                            </div>
+                            <div class="relative">
+                                <input type="number" id="insurancePercent" min="0" max="100" step="0.1" value="1.3" placeholder="e.g. 1.3" oninput="calculateAll()" class="w-full pl-2.5 pr-6 py-2 text-xs sm:text-sm bg-white dark:bg-slate-900 rounded-xl font-bold text-slate-900 dark:text-white placeholder-slate-400 outline-none">
+                                <span class="absolute right-2 top-2 text-xs font-bold text-slate-400">%</span>
+                            </div>
+                            <span id="insuranceFeeCalc" class="text-[11px] font-bold text-slate-500 dark:text-slate-400 mt-1 block">0 MMK</span>
+                        </div>
+                    </div>
+
+                    <!-- Interest Method -->
+                    <div class="space-y-1.5">
+                        <label class="block text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200">
+                            Interest Calculation Method
+                        </label>
+                        <div class="grid grid-cols-2 gap-2 p-1.5 bg-slate-100 dark:bg-slate-950 rounded-2xl">
+                            <button type="button" id="calcModeEmiBtn" onclick="setCalcMode('emi')" class="py-2.5 px-2 text-xs font-bold rounded-xl bg-white dark:bg-slate-800 text-brand-600 dark:text-brand-400 shadow-sm transition-all flex flex-col items-center justify-center">
+                                <span>Fixed Monthly EMI</span>
+                                <span class="text-[10px] font-medium text-slate-400">Reducing Balance</span>
+                            </button>
+                            <button type="button" id="calcModeDecliningBtn" onclick="setCalcMode('declining')" class="py-2.5 px-2 text-xs font-bold rounded-xl text-slate-600 dark:text-slate-400 transition-all flex flex-col items-center justify-center">
+                                <span>Fixed Principal</span>
+                                <span class="text-[10px] font-medium text-slate-400">Declining Balance</span>
+                            </button>
+                        </div>
+                    </div>
+
+                </form>
+            </section>
+
+            <!-- RIGHT COLUMN: OUTPUT DASHBOARD -->
+            <section class="lg:col-span-7 space-y-5">
+                
+                <!-- Primary Highlight Hero Cards -->
+                <div id="heroCards" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    
+                    <!-- Card 1: Total Upfront -->
+                    <div class="bg-gradient-to-br from-brand-600 to-brand-800 text-white rounded-3xl p-5 shadow-md shadow-brand-500/10 relative overflow-hidden flex flex-col justify-between">
+                        <div class="flex justify-between items-start gap-2">
+                            <span class="text-xs font-bold text-brand-100 bg-white/10 px-3 py-1 rounded-full backdrop-blur-md">
+                                Total Upfront Payment
+                            </span>
+                            <span class="material-icons-outlined text-brand-200 text-xl" aria-hidden="true">account_balance_wallet</span>
+                        </div>
+                        <div class="my-4">
+                            <h3 id="totalUpfrontDisplay" class="text-2xl sm:text-3xl font-extrabold tracking-tight">
+                                0
+                            </h3>
+                            <p id="totalUpfrontLakh" class="text-xs sm:text-sm text-brand-200 mt-1 font-bold">
+                                (0 Lakhs)
+                            </p>
+                        </div>
+                        <div class="pt-2.5 flex justify-between text-xs text-brand-100">
+                            <span>Down Payment + All Fees</span>
+                            <span id="upfrontPercentOfTotal" class="font-extrabold">0%</span>
+                        </div>
+                    </div>
+
+                    <!-- Card 2: Monthly Payment -->
+                    <div class="bg-slate-900 dark:bg-slate-900 text-white rounded-3xl p-5 shadow-md relative overflow-hidden flex flex-col justify-between">
+                        <div class="flex justify-between items-start gap-2">
+                            <span class="text-xs font-bold text-emerald-400 bg-emerald-500/15 px-3 py-1 rounded-full backdrop-blur-md">
+                                Monthly Payment
+                            </span>
+                            <span class="material-icons-outlined text-emerald-400 text-xl" aria-hidden="true">event_repeat</span>
+                        </div>
+                        <div class="my-4">
+                            <h3 id="monthlyPaymentDisplay" class="text-2xl sm:text-3xl font-extrabold tracking-tight text-emerald-400">
+                                0
+                            </h3>
+                            <p id="monthlyPaymentLakh" class="text-xs sm:text-sm text-slate-300 mt-1 font-bold">
+                                (0 Lakhs / mo)
+                            </p>
+                        </div>
+                        <div class="pt-2.5 flex justify-between text-xs text-slate-400">
+                            <span>Term: <span id="totalMonthsDisplay" class="text-white font-bold">0 Months</span></span>
+                            <span id="modeDisplayTag" class="text-emerald-400 font-bold">EMI</span>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Dashboard Tabs Container -->
+                <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-sm overflow-hidden">
+                    
+                    <!-- Tab Navigation Header -->
+                    <div id="tabHeader" class="flex px-3 sm:px-4 pt-3 pb-2 bg-slate-50/80 dark:bg-slate-950/80 gap-1 sm:gap-2" role="tablist">
+                        <button type="button" onclick="switchTab('overview')" id="tabBtn-overview" role="tab" aria-selected="true" class="tab-btn px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-bold bg-brand-50 dark:bg-brand-950/80 text-brand-600 dark:text-brand-400 rounded-xl flex items-center gap-1.5 transition-all">
+                            <span class="material-icons-outlined text-base" aria-hidden="true">pie_chart_outline</span>
+                            <span>Overview</span>
+                        </button>
+                        <button type="button" onclick="switchTab('quotation')" id="tabBtn-quotation" role="tab" aria-selected="false" class="tab-btn px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-bold text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 rounded-xl flex items-center gap-1.5 transition-all">
+                            <span class="material-icons-outlined text-base" aria-hidden="true">description</span>
+                            <span>Quotation</span>
+                        </button>
+                        <button type="button" onclick="switchTab('analytics')" id="tabBtn-analytics" role="tab" aria-selected="false" class="tab-btn px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-bold text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 rounded-xl flex items-center gap-1.5 transition-all">
+                            <span class="material-icons-outlined text-base" aria-hidden="true">show_chart</span>
+                            <span>Analytics Chart</span>
+                        </button>
+                    </div>
+
+                    <!-- Tab Panel 1: Overview Breakdown -->
+                    <div id="panel-overview" class="tab-panel active p-4 sm:p-5 space-y-5">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <div class="p-3.5 bg-slate-50 dark:bg-slate-950 rounded-2xl">
+                                <span class="text-xs font-bold text-slate-600 dark:text-slate-400 block mb-1">Total Bank Loan</span>
+                                <p id="loanAmountDisplay" class="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white">0</p>
+                                <p id="loanAmountLakh" class="text-xs font-bold text-slate-500">(0 Lakhs)</p>
+                            </div>
+                            <div class="p-3.5 bg-slate-50 dark:bg-slate-950 rounded-2xl">
+                                <span class="text-xs font-bold text-slate-600 dark:text-slate-400 block mb-1">Total Interest</span>
+                                <p id="totalInterestDisplay" class="text-base sm:text-lg font-extrabold text-amber-600 dark:text-amber-400">0</p>
+                                <p id="totalInterestLakh" class="text-xs font-bold text-slate-500">(0 Lakhs)</p>
+                            </div>
+                            <div class="p-3.5 bg-slate-50 dark:bg-slate-950 rounded-2xl">
+                                <span class="text-xs font-bold text-slate-600 dark:text-slate-400 block mb-1">Grand Total Cost</span>
+                                <p id="grandTotalDisplay" class="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white">0</p>
+                                <p id="grandTotalLakh" class="text-xs font-bold text-slate-500">(0 Lakhs)</p>
+                            </div>
+                        </div>
+
+                        <!-- Upfront Breakdown -->
+                        <div class="space-y-3">
+                            <h4 class="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
+                                <span class="material-icons-outlined text-base text-brand-600" aria-hidden="true">checklist</span>
+                                Initial Upfront Breakdown
+                            </h4>
+
+                            <div class="space-y-2 text-xs sm:text-sm">
+                                <div class="p-3 bg-slate-50 dark:bg-slate-950 rounded-xl flex items-center justify-between">
+                                    <div class="flex items-center gap-2">
+                                        <span class="w-3 h-3 rounded-full bg-brand-600" aria-hidden="true"></span>
+                                        <span class="font-bold text-slate-800 dark:text-slate-200">Down Payment (<span id="dpPercentLabel">50</span>%)</span>
+                                    </div>
+                                    <div class="text-right">
+                                        <span id="breakdownDP" class="font-extrabold text-slate-900 dark:text-white">0 MMK</span>
+                                        <span id="breakdownDPLakh" class="block text-xs font-bold text-slate-500">(0 Lakhs)</span>
+                                    </div>
+                                </div>
+
+                                <div class="p-3 bg-slate-50 dark:bg-slate-950 rounded-xl flex items-center justify-between">
+                                    <div class="flex items-center gap-2">
+                                        <span class="w-3 h-3 rounded-full bg-indigo-500" aria-hidden="true"></span>
+                                        <span class="font-bold text-slate-800 dark:text-slate-200">Bank Service Fee (<span id="bankFeePercentLabel">2</span>%)</span>
+                                    </div>
+                                    <div class="text-right">
+                                        <span id="breakdownBank" class="font-extrabold text-slate-900 dark:text-white">0 MMK</span>
+                                        <span id="breakdownBankLakh" class="block text-xs font-bold text-slate-500">(0 Lakhs)</span>
+                                    </div>
+                                </div>
+
+                                <div class="p-3 bg-slate-50 dark:bg-slate-950 rounded-xl flex items-center justify-between">
+                                    <div class="flex items-center gap-2">
+                                        <span class="w-3 h-3 rounded-full bg-sky-500" aria-hidden="true"></span>
+                                        <span class="font-bold text-slate-800 dark:text-slate-200">Company Service Fee (<span id="carFeePercentLabel">2</span>%)</span>
+                                    </div>
+                                    <div class="text-right">
+                                        <span id="breakdownCar" class="font-extrabold text-slate-900 dark:text-white">0 MMK</span>
+                                        <span id="breakdownCarLakh" class="block text-xs font-bold text-slate-500">(0 Lakhs)</span>
+                                    </div>
+                                </div>
+
+                                <div class="p-3 bg-slate-50 dark:bg-slate-950 rounded-xl flex items-center justify-between">
+                                    <div class="flex items-center gap-2">
+                                        <span class="w-3 h-3 rounded-full bg-emerald-500" aria-hidden="true"></span>
+                                        <span class="font-bold text-slate-800 dark:text-slate-200">Car Insurance (<span id="insuranceFeePercentLabel">1.3</span>%)</span>
+                                    </div>
+                                    <div class="text-right">
+                                        <span id="breakdownInsurance" class="font-extrabold text-slate-900 dark:text-white">0 MMK</span>
+                                        <span id="breakdownInsuranceLakh" class="block text-xs font-bold text-slate-500">(0 Lakhs)</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Print Quotation Summary Panel -->
+                    <div id="panel-quotation" class="tab-panel p-5 space-y-6">
+                        
+                        <!-- Header Actions for Quotation -->
+                        <div class="flex flex-wrap justify-between items-center gap-2 pb-3 print-hide">
+                            <div>
+                                <h3 class="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
+                                    Official Sales Quotation Summary
+                                </h3>
+                                <p class="text-xs text-slate-500">Fill in customer info below and click Print.</p>
+                            </div>
+                            <button type="button" onclick="handlePrint()" class="px-4 py-2 text-xs font-bold bg-brand-600 hover:bg-brand-700 text-white rounded-xl transition-all shadow-sm flex items-center gap-1.5 active:scale-95">
+                                <span class="material-icons-outlined text-base" aria-hidden="true">print</span>
+                                <span>Print Quotation</span>
+                            </button>
+                        </div>
+
+                        <!-- Print Document Template Box -->
+                        <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl font-mono text-xs sm:text-sm space-y-4 print-card">
+                            
+                            <!-- Customer & Car Info Editable Fields -->
+                            <div class="space-y-3 pb-3">
+                                <div class="flex flex-col gap-1.5 print-cust-row">
+                                    <label for="custNameInput" class="font-bold text-slate-700 dark:text-slate-300 flex-shrink-0">Customer Name :</label>
+                                    <input type="text" id="custNameInput" placeholder="Enter Customer Name" 
+                                        class="print-input-clean w-full bg-slate-50 dark:bg-slate-950 rounded-lg px-3 py-2 font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-brand-500" />
+                                </div>
+                                <div class="flex flex-col gap-1.5 print-cust-row">
+                                    <label for="custCarBrandInput" class="font-bold text-slate-700 dark:text-slate-300 flex-shrink-0">Car Brand :</label>
+                                    <input type="text" id="custCarBrandInput" placeholder="Enter Car Model / Brand" 
+                                        class="print-input-clean w-full bg-slate-50 dark:bg-slate-950 rounded-lg px-3 py-2 font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-brand-500" />
+                                </div>
+                            </div>
+
+                            <!-- Structured Format Details -->
+                            <div class="space-y-2.5 pt-1 text-slate-800 dark:text-slate-200">
+                                <div class="flex justify-between items-center pb-1 gap-2">
+                                    <span class="font-semibold text-slate-600 dark:text-slate-400">Amount :</span>
+                                    <span id="quoteAmount" class="font-bold text-slate-900 dark:text-white text-right">0 lakhs</span>
+                                </div>
+
+                                <div class="flex justify-between items-center pb-1 gap-2">
+                                    <span class="font-semibold text-slate-700 dark:text-slate-400">Down Amount Percentage :</span>
+                                    <span id="quoteDpPercent" class="font-bold text-slate-900 dark:text-white text-right">0%</span>
+                                </div>
+
+                                <div class="flex justify-between items-center pb-1 gap-2">
+                                    <span class="font-semibold text-slate-700 dark:text-slate-400">Loan Amount :</span>
+                                    <span id="quoteLoanAmount" class="font-bold text-slate-900 dark:text-white text-right">0 lakhs</span>
+                                </div>
+
+                                <div class="flex justify-between items-center pb-1 gap-2">
+                                    <span class="font-semibold text-slate-700 dark:text-slate-400">Annual Interest Rate :</span>
+                                    <span id="quoteRate" class="font-bold text-slate-900 dark:text-white text-right">0%</span>
+                                </div>
+
+                                <div class="flex justify-between items-center pb-1 gap-2">
+                                    <span class="font-semibold text-slate-700 dark:text-slate-400">Loan Period in Years :</span>
+                                    <span id="quoteYears" class="font-bold text-slate-900 dark:text-white text-right">0 years</span>
+                                </div>
+
+                                <div class="flex justify-between items-center pb-1 gap-2">
+                                    <span class="font-semibold text-slate-700 dark:text-slate-400">Bank Service Fees :</span>
+                                    <span id="quoteBankFee" class="font-bold text-slate-900 dark:text-white text-right">0 lakhs</span>
+                                </div>
+
+                                <div class="flex justify-between items-center pb-1 gap-2">
+                                    <span class="font-semibold text-slate-700 dark:text-slate-400 flex-shrink-0">Company Service Fees :</span>
+                                    <span id="quoteCompanyFee" class="font-bold text-slate-900 dark:text-white text-right">0 lakhs</span>
+                                </div>
+
+                                <div class="flex justify-between items-center pb-1 gap-2">
+                                    <span class="font-semibold text-slate-700 dark:text-slate-400">Insurance :</span>
+                                    <span id="quoteInsurance" class="font-bold text-slate-900 dark:text-white text-right">0 lakhs</span>
+                                </div>
+
+                                <div class="flex justify-between items-center pb-1 bg-brand-50/50 dark:bg-brand-950/30 p-2 rounded-lg gap-2">
+                                    <span class="font-bold text-brand-700 dark:text-brand-300">Down Amount :</span>
+                                    <span id="quoteDownAmount" class="font-black text-brand-700 dark:text-brand-300 text-right">0 lakhs</span>
+                                </div>
+
+                                <div class="flex justify-between items-center pb-1 bg-emerald-50/50 dark:bg-emerald-950/30 p-2 rounded-lg gap-2">
+                                    <span class="font-bold text-emerald-700 dark:text-emerald-400">Schedule Monthly Payment :</span>
+                                    <span id="quoteMonthly" class="font-black text-emerald-700 dark:text-emerald-400 text-right">0 lakhs</span>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- Tab Panel 3: Analytics Chart -->
+                    <div id="panel-analytics" class="tab-panel p-4 sm:p-5 space-y-4">
+                        <div class="flex flex-wrap justify-between items-center gap-2 pb-2">
+                            <h4 class="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100">
+                                Visual Analytics &amp; Breakdown
+                            </h4>
+                            <div class="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-xs gap-1">
+                                <button type="button" id="chartTabBtn1" onclick="switchChartType('pie')" class="px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 font-bold text-slate-800 dark:text-white shadow-sm transition-all">Payment Breakdown</button>
+                                <button type="button" id="chartTabBtn2" onclick="switchChartType('line')" class="px-3 py-1.5 rounded-lg font-medium text-slate-500 hover:text-slate-800 dark:hover:text-white transition-all">Balance Trend</button>
+                            </div>
+                        </div>
+
+                        <div class="relative h-64 sm:h-72 w-full flex items-center justify-center">
+                            <canvas id="loanChart"></canvas>
+                        </div>
+                    </div>
+
+                </div>
+
+            </section>
+        </div>
+    </main>
+
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        let currentChart = null;
+        let activeChartType = 'pie';
+        let activeTab = 'overview';
+
+        let currentCalculationData = {
+            carValue: 0,
+            downPaymentPercent: 50,
+            downPaymentAmount: 0,
+            loanAmount: 0,
+            bankServicePercent: 2,
+            bankServiceFee: 0,
+            carServicePercent: 2,
+            carServiceFee: 0,
+            insurancePercent: 1.3,
+            insuranceFee: 0,
+            insuranceBase: 'carValue',
+            totalUpfront: 0,
+            loanYears: 0,
+            interestRate: 13,
+            calcMode: 'emi',
+            monthlyPayment: 0,
+            totalInterest: 0,
+            grandTotalCost: 0,
+            schedule: []
+        };
+
+        function formatNumber(num) {
+            if (isNaN(num) || num === null || num === 0) return "0";
+            return Math.round(num).toLocaleString('en-US');
+        }
+
+        function parseFormattedNumber(str) {
+            if (!str) return 0;
+            return parseFloat(str.replace(/,/g, '')) || 0;
+        }
+
+        function formatLakhs(amount) {
+            const lakhs = amount / 100000;
+            if (lakhs > 0) {
+                return `(${lakhs.toLocaleString('en-US', {maximumFractionDigits: 2})} Lakhs)`;
+            }
+            return `(0 Lakhs)`;
+        }
+
+        function updateRangeProgress(val) {
+            const range = document.getElementById('downPaymentRange');
+            if (!range) return;
+            const min = parseFloat(range.min) || 0;
+            const max = parseFloat(range.max) || 100;
+            const percentage = Math.min(Math.max(((val - min) / (max - min)) * 100, 0), 100);
+            
+            const isDark = document.documentElement.classList.contains('dark');
+            const trackBg = isDark ? '#1e293b' : '#e2e8f0';
+            const activeBg = '#2563eb';
+
+            range.style.background = `linear-gradient(to right, ${activeBg} 0%, ${activeBg} ${percentage}%, ${trackBg} ${percentage}%, ${trackBg} 100%)`;
+        }
+
+        function formatAndCalculate(input) {
+            let rawValue = input.value.replace(/[^0-9]/g, '');
+            if (rawValue === '') {
+                input.value = '';
+                calculateAll();
+                return;
+            }
+            let numericVal = parseInt(rawValue, 10);
+            input.value = numericVal.toLocaleString('en-US');
+            calculateAll();
+        }
+
+        function setCarValuePreset(amount) {
+            const input = document.getElementById('carValue');
+            input.value = amount.toLocaleString('en-US');
+            calculateAll();
+        }
+
+        function selectDpPreset(percent) {
+            updateDpPresetHighlight(percent);
+            document.getElementById('downPaymentPercent').value = percent;
+            document.getElementById('downPaymentRange').value = percent;
+            updateRangeProgress(percent);
+            calculateAll();
+        }
+
+        function syncDownPaymentFromRange(val) {
+            document.getElementById('downPaymentPercent').value = val;
+            updateDpPresetHighlight(val);
+            updateRangeProgress(val);
+            calculateAll();
+        }
+
+        function syncDownPaymentFromInput(val) {
+            let clamped = Math.min(Math.max(parseFloat(val) || 0, 0), 100);
+            document.getElementById('downPaymentRange').value = clamped;
+            updateDpPresetHighlight(clamped);
+            updateRangeProgress(clamped);
+            calculateAll();
+        }
+
+        function updateDpPresetHighlight(val) {
+            document.querySelectorAll('.dp-preset-btn').forEach(btn => {
+                if (parseFloat(btn.getAttribute('data-value')) === parseFloat(val)) {
+                    btn.className = "dp-preset-btn text-xs py-2 rounded-xl bg-brand-50 dark:bg-brand-950/80 text-brand-700 dark:text-brand-300 font-extrabold active:scale-95 transition-all";
+                } else {
+                    btn.className = "dp-preset-btn text-xs py-2 rounded-xl font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all active:scale-95";
+                }
+            });
+        }
+
+        function setCalcMode(mode) {
+            currentCalculationData.calcMode = mode;
+            const emiBtn = document.getElementById('calcModeEmiBtn');
+            const declBtn = document.getElementById('calcModeDecliningBtn');
+
+            if (mode === 'emi') {
+                emiBtn.className = "py-2.5 px-2 text-xs font-bold rounded-xl bg-white dark:bg-slate-800 text-brand-600 dark:text-brand-400 shadow-sm transition-all flex flex-col items-center justify-center";
+                declBtn.className = "py-2.5 px-2 text-xs font-bold rounded-xl text-slate-600 dark:text-slate-400 transition-all flex flex-col items-center justify-center";
+                document.getElementById('modeDisplayTag').innerText = "EMI";
+            } else {
+                declBtn.className = "py-2.5 px-2 text-xs font-bold rounded-xl bg-white dark:bg-slate-800 text-brand-600 dark:text-brand-400 shadow-sm transition-all flex flex-col items-center justify-center";
+                emiBtn.className = "py-2.5 px-2 text-xs font-bold rounded-xl text-slate-600 dark:text-slate-400 transition-all flex flex-col items-center justify-center";
+                document.getElementById('modeDisplayTag').innerText = "Declining";
+            }
+            calculateAll();
+        }
+
+        function calculateAll() {
+            const carVal = parseFormattedNumber(document.getElementById('carValue').value);
+            const dpPercent = parseFloat(document.getElementById('downPaymentPercent').value) || 0;
+            const bankPercent = parseFloat(document.getElementById('bankServicePercent').value) || 0;
+            const carServicePercent = parseFloat(document.getElementById('carServicePercent').value) || 0;
+            const insPercent = parseFloat(document.getElementById('insurancePercent').value) || 0;
+            const insBase = document.getElementById('insuranceBase').value;
+            const yearsInput = document.getElementById('loanYears').value;
+            const years = yearsInput === '' ? 0 : parseInt(yearsInput, 10);
+            const annualRate = parseFloat(document.getElementById('interestRate').value) || 0;
+            const mode = currentCalculationData.calcMode;
+
+            updateRangeProgress(dpPercent);
+
+            // Down Payment & Loan Amount
+            const dpAmount = carVal * (dpPercent / 100);
+            const loanAmount = Math.max(carVal - dpAmount, 0);
+
+            // Fees Calculation
+            const bankFee = loanAmount * (bankPercent / 100);
+            const carFee = loanAmount * (carServicePercent / 100);
+            const insBaseAmount = (insBase === 'carValue') ? carVal : loanAmount;
+            const insuranceFee = insBaseAmount * (insPercent / 100);
+
+            // Upfront Payment
+            const totalUpfront = dpAmount + bankFee + carFee + insuranceFee;
+
+            // Monthly Calculation
+            const totalMonths = years * 12;
+            const monthlyRate = (annualRate / 100) / 12;
+
+            let schedule = [];
+            let totalInterest = 0;
+            let monthlyPayment = 0;
+
+            if (loanAmount > 0 && totalMonths > 0) {
+                if (mode === 'emi') {
+                    if (monthlyRate > 0) {
+                        monthlyPayment = (loanAmount * monthlyRate * Math.pow(1 + monthlyRate, totalMonths)) / (Math.pow(1 + monthlyRate, totalMonths) - 1);
+                    } else {
+                        monthlyPayment = loanAmount / totalMonths;
+                    }
+
+                    let balance = loanAmount;
+                    for (let m = 1; m <= totalMonths; m++) {
+                        const interestForMonth = balance * monthlyRate;
+                        let principalForMonth = monthlyPayment - interestForMonth;
+                        
+                        if (m === totalMonths) {
+                            principalForMonth = balance;
+                            monthlyPayment = principalForMonth + interestForMonth;
+                        }
+
+                        const endingBalance = Math.max(balance - principalForMonth, 0);
+
+                        schedule.push({
+                            month: m,
+                            year: Math.ceil(m / 12),
+                            beginning: balance,
+                            payment: monthlyPayment,
+                            principal: principalForMonth,
+                            interest: interestForMonth,
+                            ending: endingBalance
+                        });
+
+                        totalInterest += interestForMonth;
+                        balance = endingBalance;
+                    }
+                } else {
+                    const fixedPrincipal = loanAmount / totalMonths;
+                    let balance = loanAmount;
+
+                    for (let m = 1; m <= totalMonths; m++) {
+                        const interestForMonth = balance * monthlyRate;
+                        const currentPayment = fixedPrincipal + interestForMonth;
+                        const endingBalance = Math.max(balance - fixedPrincipal, 0);
+
+                        schedule.push({
+                            month: m,
+                            year: Math.ceil(m / 12),
+                            beginning: balance,
+                            payment: currentPayment,
+                            principal: fixedPrincipal,
+                            interest: interestForMonth,
+                            ending: endingBalance
+                        });
+
+                        totalInterest += interestForMonth;
+                        balance = endingBalance;
+                    }
+                    monthlyPayment = schedule.length > 0 ? schedule[0].payment : 0;
+                }
+            }
+
+            const grandTotalCost = carVal > 0 ? (carVal + bankFee + carFee + insuranceFee + totalInterest) : 0;
+
+            currentCalculationData = {
+                carValue: carVal,
+                downPaymentPercent: dpPercent,
+                downPaymentAmount: dpAmount,
+                loanAmount: loanAmount,
+                bankServicePercent: bankPercent,
+                bankServiceFee: bankFee,
+                carServicePercent: carServicePercent,
+                carServiceFee: carFee,
+                insurancePercent: insPercent,
+                insuranceFee: insuranceFee,
+                insuranceBase: insBase,
+                totalUpfront: totalUpfront,
+                loanYears: years,
+                interestRate: annualRate,
+                calcMode: mode,
+                monthlyPayment: monthlyPayment,
+                totalInterest: totalInterest,
+                grandTotalCost: grandTotalCost,
+                schedule: schedule
+            };
+
+            updateUI();
+        }
+
+        function updateUI() {
+            const data = currentCalculationData;
+
+            // Form dynamic labels
+            document.getElementById('carValueLakh').innerText = formatLakhs(data.carValue);
+            document.getElementById('downPaymentAmountDisplay').innerText = `${formatNumber(data.downPaymentAmount)} MMK`;
+            document.getElementById('bankFeeCalc').innerText = `${formatNumber(data.bankServiceFee)} MMK`;
+            document.getElementById('carFeeCalc').innerText = `${formatNumber(data.carServiceFee)} MMK`;
+            document.getElementById('insuranceFeeCalc').innerText = `${formatNumber(data.insuranceFee)} MMK`;
+
+            // Upfront Hero Card
+            document.getElementById('totalUpfrontDisplay').innerText = `${formatNumber(data.totalUpfront)}`;
+            document.getElementById('totalUpfrontLakh').innerText = formatLakhs(data.totalUpfront);
+
+            const upfrontPct = data.carValue > 0 ? ((data.totalUpfront / data.carValue) * 100).toFixed(1) : 0;
+            document.getElementById('upfrontPercentOfTotal').innerText = `${upfrontPct}%`;
+
+            // Monthly Payment Hero Card
+            if (data.calcMode === 'emi') {
+                document.getElementById('monthlyPaymentDisplay').innerText = `${formatNumber(data.monthlyPayment)}`;
+                document.getElementById('monthlyPaymentLakh').innerText = data.monthlyPayment > 0 ? formatLakhs(data.monthlyPayment).replace(')', ' / mo)') : '(0 Lakhs / mo)';
+            } else {
+                const firstMonth = data.schedule.length > 0 ? data.schedule[0].payment : 0;
+                const lastMonth = data.schedule.length > 0 ? data.schedule[data.schedule.length - 1].payment : 0;
+                document.getElementById('monthlyPaymentDisplay').innerText = `${formatNumber(firstMonth)} ~ ${formatNumber(lastMonth)}`;
+                document.getElementById('monthlyPaymentLakh').innerText = '(Declining balance)';
+            }
+
+            const totalM = data.loanYears * 12;
+            document.getElementById('totalMonthsDisplay').innerText = totalM > 0 ? `${totalM} Months` : '0 Months';
+
+            // Metrics Grid
+            document.getElementById('loanAmountDisplay').innerText = formatNumber(data.loanAmount);
+            document.getElementById('loanAmountLakh').innerText = formatLakhs(data.loanAmount);
+
+            document.getElementById('totalInterestDisplay').innerText = formatNumber(data.totalInterest);
+            document.getElementById('totalInterestLakh').innerText = formatLakhs(data.totalInterest);
+
+            document.getElementById('grandTotalDisplay').innerText = formatNumber(data.grandTotalCost);
+            document.getElementById('grandTotalLakh').innerText = formatLakhs(data.grandTotalCost);
+
+            // Upfront Breakdown
+            document.getElementById('dpPercentLabel').innerText = data.downPaymentPercent || 0;
+            document.getElementById('breakdownDP').innerText = `${formatNumber(data.downPaymentAmount)} MMK`;
+            document.getElementById('breakdownDPLakh').innerText = formatLakhs(data.downPaymentAmount);
+
+            document.getElementById('bankFeePercentLabel').innerText = data.bankServicePercent || 0;
+            document.getElementById('breakdownBank').innerText = `${formatNumber(data.bankServiceFee)} MMK`;
+            document.getElementById('breakdownBankLakh').innerText = formatLakhs(data.bankServiceFee);
+
+            document.getElementById('carFeePercentLabel').innerText = data.carServicePercent || 0;
+            document.getElementById('breakdownCar').innerText = `${formatNumber(data.carServiceFee)} MMK`;
+            document.getElementById('breakdownCarLakh').innerText = formatLakhs(data.carServiceFee);
+
+            document.getElementById('insuranceFeePercentLabel').innerText = data.insurancePercent || 0;
+            document.getElementById('breakdownInsurance').innerText = `${formatNumber(data.insuranceFee)} MMK`;
+            document.getElementById('breakdownInsuranceLakh').innerText = formatLakhs(data.insuranceFee);
+
+            // Update Quotation Tab Values
+            document.getElementById('quoteAmount').innerText = `${formatNumber(data.carValue)} lakhs`;
+            document.getElementById('quoteDpPercent').innerText = `${data.downPaymentPercent}%`;
+            document.getElementById('quoteLoanAmount').innerText = `${formatNumber(data.loanAmount)} lakhs`;
+            document.getElementById('quoteRate').innerText = `${data.interestRate}%`;
+            document.getElementById('quoteYears').innerText = `${data.loanYears} years`;
+            document.getElementById('quoteBankFee').innerText = `${formatNumber(data.bankServiceFee)} lakhs`;
+            document.getElementById('quoteCompanyFee').innerText = `${formatNumber(data.carServiceFee)} lakhs`;
+            document.getElementById('quoteInsurance').innerText = `${formatNumber(data.insuranceFee)} lakhs`;
+            document.getElementById('quoteDownAmount').innerText = `${formatNumber(data.totalUpfront)} lakhs`;
+            document.getElementById('quoteMonthly').innerText = `${formatNumber(data.monthlyPayment)} lakhs`;
+
+            if (activeTab === 'analytics') {
+                renderChart();
+            }
+        }
+
+        function switchTab(tabId) {
+            activeTab = tabId;
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.className = "tab-btn px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-bold text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 rounded-xl transition-all";
+                btn.setAttribute('aria-selected', 'false');
+            });
+            document.querySelectorAll('.tab-panel').forEach(panel => {
+                panel.classList.remove('active');
+            });
+
+            const activeBtn = document.getElementById(`tabBtn-${tabId}`);
+            if (activeBtn) {
+                activeBtn.className = "tab-btn px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-bold bg-brand-50 dark:bg-brand-950/80 text-brand-600 dark:text-brand-400 rounded-xl transition-all";
+                activeBtn.setAttribute('aria-selected', 'true');
+            }
+
+            const activePanel = document.getElementById(`panel-${tabId}`);
+            if (activePanel) {
+                activePanel.classList.add('active');
+            }
+
+            if (tabId === 'analytics') {
+                renderChart();
+            }
+        }
+
+        function switchChartType(type) {
+            activeChartType = type;
+            const btn1 = document.getElementById('chartTabBtn1');
+            const btn2 = document.getElementById('chartTabBtn2');
+
+            btn1.className = "px-3 py-1.5 rounded-lg font-medium text-slate-500 hover:text-slate-800 dark:hover:text-white transition-all";
+            btn2.className = "px-3 py-1.5 rounded-lg font-medium text-slate-500 hover:text-slate-800 dark:hover:text-white transition-all";
+
+            if (type === 'pie') {
+                btn1.className = "px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 font-bold text-slate-800 dark:text-white shadow-sm transition-all";
+            } else {
+                btn2.className = "px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 font-bold text-slate-800 dark:text-white shadow-sm transition-all";
+            }
+
+            renderChart();
+        }
+
+        function renderChart() {
+            const ctx = document.getElementById('loanChart').getContext('2d');
+            const data = currentCalculationData;
+
+            if (currentChart) {
+                currentChart.destroy();
+            }
+
+            const isDark = document.documentElement.classList.contains('dark');
+            const textColor = isDark ? '#cbd5e1' : '#334155';
+
+            if (activeChartType === 'pie') {
+                const totalVals = data.downPaymentAmount + data.bankServiceFee + data.carServiceFee + data.insuranceFee + data.totalInterest;
+                
+                if (totalVals === 0) {
+                    currentChart = new Chart(ctx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['No Data'],
+                            datasets: [{
+                                data: [1],
+                                backgroundColor: [isDark ? '#334155' : '#e2e8f0'],
+                                borderWidth: 0
+                            }]
+                        },
+                        options: {
+                            responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { enabled: false } }
+                        }
+                    });
+                    return;
+                }
+
+                currentChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Down Payment', 'Bank Service Fee', 'Company Service Fee', 'Insurance Fee', 'Total Interest'],
+                        datasets: [{
+                            data: [
+                                data.downPaymentAmount,
+                                data.bankServiceFee,
+                                data.carServiceFee,
+                                data.insuranceFee,
+                                data.totalInterest
+                            ],
+                            backgroundColor: ['#2563eb', '#6366f1', '#38bdf8', '#10b981', '#f59e0b'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: window.innerWidth < 640 ? 'bottom' : 'right',
+                                labels: { color: textColor, font: { family: 'Inter, sans-serif', size: 11 }, boxWidth: 12 }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return ` ${context.label}: ${formatNumber(context.raw)} MMK`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            } else {
+                const labels = data.schedule.length > 0 ? data.schedule.map(s => `Month ${s.month}`) : ['No Data'];
+                const balances = data.schedule.length > 0 ? data.schedule.map(s => Math.round(s.ending)) : [0];
+
+                currentChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Ending Balance',
+                            data: balances,
+                            borderColor: '#2563eb',
+                            backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                            fill: true,
+                            tension: 0.3,
+                            pointRadius: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: { ticks: { color: textColor, font: { size: 10 } }, grid: { display: false } },
+                            y: {
+                                ticks: {
+                                    color: textColor,
+                                    font: { size: 10 },
+                                    callback: function(value) { return (value / 100000) + ' Lakhs'; }
+                                },
+                                grid: { color: isDark ? '#1e293b' : '#f1f5f9' }
+                            }
+                        },
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) { return ` Ending Balance: ${formatNumber(context.raw)} MMK`; }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        function toggleDarkMode() {
+            const html = document.documentElement;
+            const icon = document.getElementById('themeIcon');
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                icon.innerText = 'dark_mode';
+            } else {
+                html.classList.add('dark');
+                icon.innerText = 'light_mode';
+            }
+            if (activeTab === 'analytics') {
+                renderChart();
+            }
+        }
+
+        function resetDefaults() {
+            document.getElementById('carValue').value = '';
+            document.getElementById('downPaymentPercent').value = '50';
+            document.getElementById('downPaymentRange').value = '50';
+            document.getElementById('custNameInput').value = '';
+            document.getElementById('custCarBrandInput').value = '';
+            updateDpPresetHighlight(50);
+            updateRangeProgress(50);
+            
+            document.getElementById('bankServicePercent').value = '2';
+            document.getElementById('carServicePercent').value = '2';
+            document.getElementById('insurancePercent').value = '1.3';
+            document.getElementById('insuranceBase').value = 'carValue';
+            document.getElementById('loanYears').value = '';
+            document.getElementById('interestRate').value = '13';
+            
+            setCalcMode('emi');
+            calculateAll();
+        }
+        
+        function handlePrint() {
+            if (typeof Android !== "undefined" && Android.printDocument) {
+                Android.printDocument();
+            } else {
+                window.print();
+            }
+        }
+
+
+        window.onload = function() {
+            calculateAll();
+        };
+    </script>
+</body>
+</html>
